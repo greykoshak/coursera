@@ -21,7 +21,7 @@ class SpecMachine(CarBase):
         pass
 
 
-with open("car.csv") as csv_fd:
+with open("cars.csv") as csv_fd:
     reader = csv.reader(csv_fd, delimiter=";")
     next(reader)  # пропускаем заголовок
     for row in reader:

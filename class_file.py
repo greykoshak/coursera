@@ -5,12 +5,22 @@ class File:
     def __init__(self, path):
         self.path_to = path
 
+
     # 2. Method write
     def write(self, line):
         with open(self.path_to, "w") as fw:
             fw.write(line)
+            fw.write(line)
 
-    # 4. Iteration
+    # 3. Adding (__add__)
+    def __add__(self, other_file):
+        with open(other_file) as fd:
+            pass
+
+        return True
+
+        # 4. Iteration (__iter__)
+
     def __iter__(self):
         return self
 
@@ -28,11 +38,13 @@ class File:
 
 
 def _main():
-    new_class = File("/Users/iagarkov/PycharmProjects/coursera/temp.txt")
+    new_class = File("/home/gk/PycharmProjects/coursera/temp.txt")
     print(new_class)
+    new_class.write("Trying...")
 
     for line in new_class:
         print(line)
+
 
 if __name__ == "__main__":
     _main()
