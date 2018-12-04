@@ -3,6 +3,8 @@ import os
 
 
 class CarBase:
+    """ Base class with attributes and methods """
+
     def __init__(self, car_type, brand, photo_file_name, carrying):
         self.car_type = car_type
         self.brand = brand
@@ -14,12 +16,16 @@ class CarBase:
 
 
 class Car(CarBase):
+    """ Car class """
+
     def __init__(self, car_type, brand, photo_file_name, carrying, passenger_seats_count):
         super().__init__(car_type, brand, photo_file_name, carrying)
         self.passenger_seats_count = int(passenger_seats_count)
 
 
 class Truck(CarBase):
+    """ Truck class """
+
     def __init__(self, car_type, brand, photo_file_name, carrying, body_whl):
         super().__init__(car_type, brand, photo_file_name, carrying)
         self.body_whl = body_whl
@@ -39,6 +45,8 @@ class Truck(CarBase):
 
 # car_type(0)	brand(1) passenger_seats_count(2) photo_file_name(3) body_whl(4) carrying(5) extra(6)
 class SpecMachine(CarBase):
+    """ Special machine class """
+
     def __init__(self, car_type, brand, photo_file_name, carrying, extra):
         super().__init__(car_type, brand, photo_file_name, carrying)
         self.extra = extra
