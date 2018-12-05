@@ -7,8 +7,10 @@ class File:
 
     # 1. Initial with full path
     def __init__(self, path):
-        self.path_to = path
+        self.path_to = path  # Полное имя файла
+        self.current_line = 1  # Указатель на текущую строку для считывания
 
+        # Прочитать содержимое файла для реализации __add__
         with open(self.path_to) as f:
             self.value = f.readlines()
 
@@ -30,12 +32,18 @@ class File:
     def __iter__(self):
         return self
 
-
     def __next__(self):
-        try:
-            line = self._fr.readline()
-        except EOFError:
-            raise StopIteration
+        with open(self.path_to) as fr:
+            try:
+                for _ in range(1, self.current_line):
+                    fr.readline()
+                line = fr.readline()
+                if not line:
+                    raise StopIteration
+
+                self.current_line += 1
+            except:
+                raise StopIteration
         return line
 
     # 5. print(obj)
