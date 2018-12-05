@@ -42,14 +42,6 @@ class Truck(CarBase):
     def get_body_volume(self):
         return self.body_width * self.body_height * self.body_length
 
-<<<<<<< HEAD
-with open("cars.csv") as csv_fd:
-    reader = csv.reader(csv_fd, delimiter=";")
-    next(reader)  # пропускаем заголовок
-    for row in reader:
-        print(row)
-=======
->>>>>>> 518bffdced4ad48e140eba0ea961751ed1249bf9
 
 # car_type(0)	brand(1) passenger_seats_count(2) photo_file_name(3) body_whl(4) carrying(5) extra(6)
 class SpecMachine(CarBase):

@@ -1,3 +1,7 @@
+import os
+import tempfile
+
+
 class File:
     """ Class with predefined properties """
 
@@ -5,31 +9,33 @@ class File:
     def __init__(self, path):
         self.path_to = path
 
+        with open(self.path_to) as f:
+            self.value = f.readlines()
 
     # 2. Method write
     def write(self, line):
-        with open(self.path_to, "w") as fw:
-            fw.write(line)
+        with open(self.path_to, "a+") as fw:
             fw.write(line)
 
     # 3. Adding (__add__)
-    def __add__(self, other_file):
-        with open(other_file) as fd:
-            pass
+    def __add__(self, obj):
+        third = os.path.join(tempfile.gettempdir(), 'third.txt')
 
-        return True
+        with open(third, "w+") as fd:
+            fd.writelines(self.value)
+            fd.writelines(obj.value)
+        return File(third)
 
-        # 4. Iteration (__iter__)
-
+    # 4. Iteration (__iter__)
     def __iter__(self):
         return self
 
+
     def __next__(self):
-        with open(self.path_to, "r") as fr:
-            try:
-                line = fr.readline()
-            except EOFError:
-                raise StopIteration
+        try:
+            line = self._fr.readline()
+        except EOFError:
+            raise StopIteration
         return line
 
     # 5. print(obj)
@@ -38,11 +44,15 @@ class File:
 
 
 def _main():
-    new_class = File("/home/gk/PycharmProjects/coursera/temp.txt")
-    print(new_class)
-    new_class.write("Trying...")
+    first_class = File(os.path.join(tempfile.gettempdir(), 'first.txt'))
+    first_class.write("Trying123...\n")
 
-    for line in new_class:
+    second_class = File(os.path.join(tempfile.gettempdir(), 'second.txt'))
+    second_class.write("Trying213...\n")
+
+    third = first_class + second_class
+
+    for line in third:
         print(line)
 
 
