@@ -11,7 +11,7 @@ class File:
         self.current_line = 1  # Указатель на текущую строку для считывания
 
         # Прочитать содержимое файла для реализации __add__
-        with open(self.path_to) as f:
+        with open(self.path_to, "w+") as f:
             self.value = f.readlines()
 
     # 2. Method write
@@ -35,9 +35,11 @@ class File:
     def __next__(self):
         with open(self.path_to) as fr:
             try:
+                # Прочитать n-строк до текущей
                 for _ in range(1, self.current_line):
                     fr.readline()
                 line = fr.readline()
+                # Признак EOF - не прочитано ни одной строки
                 if not line:
                     raise StopIteration
 
@@ -48,7 +50,7 @@ class File:
 
     # 5. print(obj)
     def __str__(self):
-        return "class File: {}".format(self.path_to)
+        return self.path_to
 
 
 def _main():
@@ -60,9 +62,9 @@ def _main():
 
     third = first_class + second_class
 
-    for line in third:
-        print(line)
-
+    # for line in third:
+    #     print(line)
+    print(first_class)
 
 if __name__ == "__main__":
     _main()
