@@ -32,7 +32,6 @@ class Client:
         except socket.timeout:
             raise ClientError
 
-
     def get(self, metric):
         try:
             message = f"get {metric}\n"
@@ -43,10 +42,21 @@ class Client:
                 data += self.sock.recv(1024).decode()  # Server answer
                 if "\n\n" in data:
                     break
+                answer = (data[3::]).split()  # Получился список
+                return self.get_dict(answer)
 
         except socket.timeout:
             raise ClientError
-        return
+
+    def get_dict(self, data):
+        ans_dict = dict()
+
+        for i, key in enumerate(data[::3]):
+            if key in ans_dict:
+                ans_dict[key].append(tuple([int(data[i * 3 + 1]), float(data[i * 3 + 2])]))
+            else:
+                ans_dict.update({key: [tuple([int(data[i * 3 + 1]), float(data[i * 3 + 2])])]})
+        return ans_dict
 
     def close(self):
         return self.sock.close()
@@ -57,41 +67,19 @@ class ClientError(Exception):
     pass
 
 
-def _main():
-    client = Client("127.0.0.1", 8888, timeout=15)
-
-    client.put("palm.cpu", 0.5, timestamp=1150864247)
-    client.put("palm.cpu", 2.0, timestamp=1150864248)
-    client.put("palm.cpu", 0.5, timestamp=1150864248)
-
-    client.put("eardrum.cpu", 3, timestamp=1150864250)
-    client.put("eardrum.cpu", 4, timestamp=1150864251)
-    client.put("eardrum.memory", 4200000)
-
-    print(client.get("*"))
-
-
-if __name__ == "__main__":
-    _main()
-
-
-
-
-str = b'ok\ntest 0.5 1\ntest 0.4 2\nload 301 3\n\n'
-answer = (str.decode()[3::]).split() # Получился список
-
-print(answer)
-
-dict = {}
-
-for key in answer[::3]:
-    if key in dict:
-        dict[key].append(tuple([3, 4]))
-    else:
-        # print(dict)
-        dict.update({key: [tuple([1, 2])]})
-
-print(dict)
-
-if "load" in dict:
-    print("ok")
+# def _main():
+#     client = Client("127.0.0.1", 8888, timeout=15)
+#
+#     client.put("palm.cpu", 0.5, timestamp=1150864247)
+#     client.put("palm.cpu", 2.0, timestamp=1150864248)
+#     client.put("palm.cpu", 0.5, timestamp=1150864248)
+#
+#     client.put("eardrum.cpu", 3, timestamp=1150864250)
+#     client.put("eardrum.cpu", 4, timestamp=1150864251)
+#     client.put("eardrum.memory", 4200000)
+#
+#     print(client.get("*"))
+#
+#
+# if __name__ == "__main__":
+#     _main()
