@@ -1,5 +1,5 @@
 import socket
-import datetime
+import time
 
 
 class Client:
@@ -19,6 +19,14 @@ class Client:
         try:
             if timestamp is None:
                 timestamp = str((int(time.time())))
+
+            message = f"put {metric} {value} {timestamp}\n"
+            self.sock.sendall(message.encode("utf-8"))
+
+            data = self.sock.recv(1024).decode()  # Server answer
+
+        except:
+            raise ClientError()
 
         return
 
