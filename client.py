@@ -1,5 +1,5 @@
-# asyncio, tcp client
-import asyncio
+import socket
+import datetime
 
 
 class Client:
@@ -8,33 +8,34 @@ class Client:
     методы для получения и отправки метрик на сервер
     """
 
-    def __init__(self, addr, port, timeout=None):
-        self.addr = addr
+    def __init__(self, host, port, timeout=None):
+        self.host = host
         self.port = port
         self.timeout = timeout
-
-    async def tcp_client(message, loop):
-        reader, writer = await asyncio.open_connection("127.0.0.1", 10001, loop=loop)
-        print("send: %r" % message)
-        writer.write(message.encode())
-        writer.close()
+        self.sock = socket.create_connection((self.host, self.port), self.timeout)
+        # self.sock.close()
 
     def put(self, metric, value, timestamp):
+        try:
+            if timestamp is None:
+                timestamp = str((int(time.time())))
+
         return
 
     def get(self, metric):
         return
 
+    def close(self):
+        return self.sock.close()
+
 
 # except ClientError:
+class ClientError(Exception):
+    pass
+
 
 def _main():
     client = Client("127.0.0.1", 8888, timeout=15)
-
-    loop = asyncio.get_event_loop()
-    message = "Hello, Asyncio!"
-    loop.run_until_complete(client.tcp_client(message, loop))
-    loop.close()
 
     client.put("palm.cpu", 0.5, timestamp=1150864247)
     client.put("palm.cpu", 2.0, timestamp=1150864248)
@@ -49,4 +50,3 @@ def _main():
 
 if __name__ == "__main__":
     _main()
-
