@@ -16,34 +16,48 @@ class Client:
         # self.sock.close()
 
     # Метод put не возвращает ничего в случае успешной отправки и выбрасывает исключение ClientError в случае неуспешной.
-    def put(self, metric, value, timestamp):
+    def put(self, metric, value, timestamp=None):
         try:
             if timestamp is None:
-                timestamp = str((int(time.time())))
+                # timestamp = str((int(time.time())))
+                timestamp = int(time.time())
 
-            message = f"put {metric} {float(value)} {timestamp}\n"
-            self.sock.send(message.encode("utf-8"))
+            message = f'put {metric} {value} {timestamp}\n'
+            self.sock.sendall(message.encode("utf-8"))
 
             data = self.sock.recv(1024).decode().split("\n")  # Server answer
 
-            if data[0] is not "ok":
+            if not data[0] == "ok":
                 raise ClientError
 
         except socket.timeout:
             raise ClientError
 
-    def get(self, metric):
+    """
+    Метод get принимает первым аргументом имя метрики, значения которой мы хотим выгрузить. 
+    Вместо имени метрики можно использовать символ *
+    """
+
+    def get(self, metric=None):
+
+        if metric is None:
+            raise ClientError
+
         try:
-            message = f"get {metric}\n"
-            self.sock.send(message.encode("utf-8"))
+            message = f'get {metric}\n'
+            self.sock.sendall(message.encode("utf-8"))
 
             data = ""
             while True:
                 data += self.sock.recv(1024).decode()  # Server answer
                 if "\n\n" in data:
                     break
+
+            if data.split()[0] == 'ok':
                 answer = (data[3::]).split()  # Получился список
                 return self.get_dict(answer)
+            else:
+                return dict()
 
         except socket.timeout:
             raise ClientError
@@ -53,9 +67,9 @@ class Client:
 
         for i, key in enumerate(data[::3]):
             if key in ans_dict:
-                ans_dict[key].append(tuple([int(data[i * 3 + 1]), float(data[i * 3 + 2])]))
+                ans_dict[key].append(tuple([int(float(data[i * 3 + 2])), float(data[i * 3 + 1])]))
             else:
-                ans_dict.update({key: [tuple([int(data[i * 3 + 1]), float(data[i * 3 + 2])])]})
+                ans_dict.update({key: [tuple([int(float(data[i * 3 + 2])), float(data[i * 3 + 1])])]})
         return ans_dict
 
     def close(self):
@@ -65,7 +79,6 @@ class Client:
 # except ClientError:
 class ClientError(Exception):
     pass
-
 
 # def _main():
 #     client = Client("127.0.0.1", 8888, timeout=15)
