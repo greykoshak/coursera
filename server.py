@@ -1,4 +1,5 @@
 import asyncio
+import re
 
 
 # https://docs.python.org/3/library/asyncio-protocol.html
@@ -20,21 +21,44 @@ class ClientServerProtocol(asyncio.Protocol):
 
     def data_received(self, data):
 
-        message = data.decode()
+        message = data.decode().lower()
         print('Data received: {!r}'.format(message))
         resp = self.process_data(message)
 
-        print('Send: {!r}'.format(resp))
         try:
-            self.transport.write(("b"+resp).encode("utf-8"))
-
+            print('Send: {!r}'.format(resp))
+            self.transport.write((resp).encode("utf-8"))
             print('Close the client socket')
             self.transport.close()
         except:
             raise ClientProtocolError
 
     def process_data(self, data):
-        return f"---{data}----"
+        data_list = data.split()
+        # if data_list[0] in ["put", "get"]:
+        if self.check_data(data_list):
+            resp = "ok\n\n"
+        else:
+            resp = "error\nwrong command\n\n"
+        return resp
+
+    def check_data(self, data_list):
+        code = False
+
+        if len(data_list) > 1:  # put, get имееют от одного до трех параметров
+            if data_list[0] == "put" and len(data_list) > 2:
+                code = self.check_re(data_list[1], r'\w+\.\w+') and \
+                       self.check_re(data_list[2], r'\d+\.?\d*')
+                if len(data_list) > 3:
+                    code = code and self.check_re(data_list[3], r'\d+')
+            elif data_list[0] == "get":
+                code = data_list[1] == '*' or \
+                       self.check_re(data_list[1], r'\w+\.\w+')
+        return code
+
+    def check_re(self, source, regex):
+        result = re.search(regex, source)
+        return result and len(source) == len(result.group(0))
 
 
 class ClientSocketError:
