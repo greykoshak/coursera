@@ -62,6 +62,8 @@ class ClientServerProtocol(asyncio.Protocol):
         # if data_list[0] in ["put", "get"]:
         if self.check_data(data_list):
             resp = "ok\n\n"
+            if data_list[0] == "get":
+                resp = self.get_dict(data_list[1])
         else:
             resp = "error\nwrong command\n\n"
         return resp
@@ -80,7 +82,7 @@ class ClientServerProtocol(asyncio.Protocol):
                     code = code and self.check_re(data_list[3], r'\d+')
                 if code:
                     args = [data_list[1], data_list[2], data_list[3]]
-                self.put(args[0], args[1], args[2])
+                self.put_data(args[0], args[1], args[2])
             elif data_list[0] == "get":
                 code = data_list[1] == '*' or \
                        self.check_re(data_list[1], r'\w+\.\w+')
@@ -98,16 +100,38 @@ class ClientServerProtocol(asyncio.Protocol):
 
             return {}
 
-    def put(self, key, value, timestamp):
+    def put_data(self, key, value, timestamp):
         data = self.get_data()
         if key in data:
-            data[key].append(([int(timestamp), float(value)]))
+            data[key].append(tuple([int(timestamp), float(value)]))
         else:
             data[key] = []
-            data[key].append(([int(timestamp), float(value)]))
+            tp = tuple([int(timestamp), float(value)])
+            data[key].append(tp)
 
         with open(self.storage_path, 'w') as f:
             f.write(json.dumps(data))
+
+    def get_dict(self, key):
+        data = self.get_data()
+        if not key == '*' and key in data:
+            data = {key: data['key']}
+        elif not key == '*' and not key in data:
+            data = {}
+        return data
+
+    # take first element for sort
+    def takeSecond(elem):
+        return elem[0]
+
+    # random list
+    # random = [(2, 2), (3, 4), (4, 1), (1, 3)]
+
+    # sort list with key
+    # random.sort(key=takeSecond)
+
+    # print list
+    # print('Sorted list:', random)
 
 
 def run_server(host, port):
