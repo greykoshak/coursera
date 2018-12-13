@@ -1,5 +1,23 @@
 import asyncio
 import re
+import os
+import tempfile
+import json
+
+
+class ClientError(Exception):
+    """Общий класс исключений клиента"""
+    pass
+
+
+class ClientSocketError(ClientError):
+    """Исключение, выбрасываемое клиентом при сетевой ошибке"""
+    pass
+
+
+class ClientProtocolError(ClientError):
+    """Исключение, выбрасываемое клиентом при ошибке протокола"""
+    pass
 
 
 # https://docs.python.org/3/library/asyncio-protocol.html
@@ -8,6 +26,12 @@ class ClientServerProtocol(asyncio.Protocol):
 
     def __init__(self):
         self.transport = None
+        self.storage_path = os.path.join(tempfile.gettempdir(), 'storage.data')
+        # print(self.storage_path)
+
+        if not os.path.exists(self.storage_path):
+            with open(self.storage_path, "w", encoding='utf-8') as f:
+                f.write("{}")
 
     def connection_made(self, transport):
         """ Called when connection is initiated """
@@ -49,8 +73,14 @@ class ClientServerProtocol(asyncio.Protocol):
             if data_list[0] == "put" and len(data_list) > 2:
                 code = self.check_re(data_list[1], r'\w+\.\w+') and \
                        self.check_re(data_list[2], r'\d+\.?\d*')
+                if code:
+                    args = [data_list[1], data_list[2], ""]
+
                 if len(data_list) > 3:
                     code = code and self.check_re(data_list[3], r'\d+')
+                if code:
+                    args = [data_list[1], data_list[2], data_list[3]]
+                self.put(args[0], args[1], args[2])
             elif data_list[0] == "get":
                 code = data_list[1] == '*' or \
                        self.check_re(data_list[1], r'\w+\.\w+')
@@ -60,13 +90,24 @@ class ClientServerProtocol(asyncio.Protocol):
         result = re.search(regex, source)
         return result and len(source) == len(result.group(0))
 
+    def get_data(self):
+        with open(self.storage_path, 'r') as f:
+            raw_data = f.read()
+            if raw_data:
+                return json.loads(raw_data)
 
-class ClientSocketError:
-    pass
+            return {}
 
+    def put(self, key, value, timestamp):
+        data = self.get_data()
+        if key in data:
+            data[key].append(([int(timestamp), float(value)]))
+        else:
+            data[key] = []
+            data[key].append(([int(timestamp), float(value)]))
 
-class ClientProtocolError:
-    pass
+        with open(self.storage_path, 'w') as f:
+            f.write(json.dumps(data))
 
 
 def run_server(host, port):
