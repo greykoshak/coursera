@@ -63,7 +63,16 @@ class ClientServerProtocol(asyncio.Protocol):
         if self.check_data(data_list):
             resp = "ok\n\n"
             if data_list[0] == "get":
-                resp = self.get_dict(data_list[1])
+                dict = self.get_dict(data_list[1])
+
+                resp = 'ok\n'
+                for x in dict:
+                    list = dict[x]
+                    list.sort(key=lambda elem: elem[1])
+
+                    for y in list:
+                        resp += f"{x} {y[0]} {y[1]}\n"
+                resp += '\n'
         else:
             resp = "error\nwrong command\n\n"
         return resp
@@ -82,7 +91,7 @@ class ClientServerProtocol(asyncio.Protocol):
                     code = code and self.check_re(data_list[3], r'\d+')
                 if code:
                     args = [data_list[1], data_list[2], data_list[3]]
-                self.put_data(args[0], args[1], args[2])
+                    self.put_data(args[0], args[1], args[2])
             elif data_list[0] == "get":
                 code = data_list[1] == '*' or \
                        self.check_re(data_list[1], r'\w+\.\w+')
@@ -90,7 +99,8 @@ class ClientServerProtocol(asyncio.Protocol):
 
     def check_re(self, source, regex):
         result = re.search(regex, source)
-        return result and len(source) == len(result.group(0))
+        fl = False if result is None else True
+        return fl and len(source) == len(result.group(0))
 
     def get_data(self):
         with open(self.storage_path, 'r') as f:
@@ -115,7 +125,8 @@ class ClientServerProtocol(asyncio.Protocol):
     def get_dict(self, key):
         data = self.get_data()
         if not key == '*' and key in data:
-            data = {key: data['key']}
+            data = {key: data[key]}
+            print(data)
         elif not key == '*' and not key in data:
             data = {}
         return data
@@ -160,5 +171,5 @@ def run_server(host, port):
         pass
 
 
-if __name__ == "__main__":
-    run_server('127.0.0.1', 8181)
+# if __name__ == "__main__":
+#     run_server('127.0.0.1', 8181)
