@@ -44,12 +44,11 @@ class ClientServerProtocol(asyncio.Protocol):
         # print('Connection from {}'.format(peername))
 
     def data_received(self, data):
-
-        message = data.decode().lower()
-        # print('Data received: {!r}'.format(message))
-        resp = self.process_data(message)
-
         try:
+            message = data.decode().lower()
+            # print('Data received: {!r}'.format(message))
+            resp = self.process_data(message)
+
             # print('Send: {!r}'.format(resp))
             self.transport.write((resp).encode("utf-8"))
             # print('Close the client socket')
@@ -65,14 +64,13 @@ class ClientServerProtocol(asyncio.Protocol):
             resp = "ok\n\n"
             if data_list[0] == "get":
                 dict = self.get_dict(data_list[1])
-
                 resp = 'ok\n'
                 for x in dict:
                     list = dict[x]
                     list.sort(key=lambda elem: elem[1])
 
                     for y in list:
-                        resp += f"{x} {y[1]} {y[0]}\n"
+                        resp += f"{x} {y[0]} {y[1]}\n"
                 resp += '\n'
         else:
             resp = "error\nwrong command\n\n"
@@ -95,7 +93,7 @@ class ClientServerProtocol(asyncio.Protocol):
                     self.put_data(args[0], args[1], args[2])
             elif data_list[0] == "get":
                 code = data_list[1] == '*' or \
-                       self.check_re(data_list[1], r'\w+\.\w+')
+                       self.check_re(data_list[1], r'\w+\.?\w+')
         return code
 
     def check_re(self, source, regex):
@@ -114,10 +112,10 @@ class ClientServerProtocol(asyncio.Protocol):
     def put_data(self, key, value, timestamp):
         data = self.get_data()
         if key in data:
-            data[key].append(tuple([int(timestamp), float(value)]))
+            data[key].append(tuple([float(value), int(timestamp)]))
         else:
             data[key] = []
-            tp = tuple([int(timestamp), float(value)])
+            tp = tuple([float(value), int(timestamp)])
             data[key].append(tp)
 
         with open(self.storage_path, 'w') as f:
@@ -127,24 +125,9 @@ class ClientServerProtocol(asyncio.Protocol):
         data = self.get_data()
         if not key == '*' and key in data:
             data = {key: data[key]}
-            # print(data)
         elif not key == '*' and not key in data:
             data = {}
         return data
-
-    # take first element for sort
-    # def takeSecond(elem):
-    #     return elem[0]
-
-    # random list
-    # random = [(2, 2), (3, 4), (4, 1), (1, 3)]
-
-    # sort list with key
-    # random.sort(key=takeSecond)
-    # random.sort(key=lambda x: x[0])
-
-    # print list
-    # print('Sorted list:', random)
 
 
 def run_server(host, port):
@@ -170,7 +153,6 @@ def run_server(host, port):
         loop.close()
     except:
         pass
-
 
 # if __name__ == "__main__":
 #     run_server('127.0.0.1', 8181)

@@ -43,7 +43,6 @@ class Client:
 
         status, payload = decoded_data.split("\n", 1)
         payload = payload.strip()
-        print(f"---{status} ------{payload}---")
 
         # если получили ошибку - бросаем исключение ClientError
         if status == "error":
