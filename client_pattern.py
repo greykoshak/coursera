@@ -43,6 +43,7 @@ class Client:
 
         status, payload = decoded_data.split("\n", 1)
         payload = payload.strip()
+        print(f"---{status} ------{payload}---")
 
         # если получили ошибку - бросаем исключение ClientError
         if status == "error":
@@ -98,7 +99,7 @@ class Client:
 
 def _main():
     # проверка работы клиента
-    client = Client("127.0.0.1", 8888, timeout=5)
+    client = Client("127.0.0.1", 8181, timeout=5)
     client.put("test", 0.5, timestamp=1)
     client.put("test", 2.0, timestamp=2)
     client.put("test", 0.5, timestamp=3)

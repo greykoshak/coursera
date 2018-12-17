@@ -41,24 +41,25 @@ class ClientServerProtocol(asyncio.Protocol):
         # 'peername': the remote address to which the socket is connected,
         # result of socket.socket.getpeername() (None on error)
         peername = transport.get_extra_info('peername')
-        print('Connection from {}'.format(peername))
+        # print('Connection from {}'.format(peername))
 
     def data_received(self, data):
 
         message = data.decode().lower()
-        print('Data received: {!r}'.format(message))
+        # print('Data received: {!r}'.format(message))
         resp = self.process_data(message)
 
         try:
-            print('Send: {!r}'.format(resp))
+            # print('Send: {!r}'.format(resp))
             self.transport.write((resp).encode("utf-8"))
-            print('Close the client socket')
-            self.transport.close()
+            # print('Close the client socket')
+            # self.transport.close()
         except:
             raise ClientProtocolError
 
     def process_data(self, data):
         data_list = data.split()
+
         # if data_list[0] in ["put", "get"]:
         if self.check_data(data_list):
             resp = "ok\n\n"
@@ -71,7 +72,7 @@ class ClientServerProtocol(asyncio.Protocol):
                     list.sort(key=lambda elem: elem[1])
 
                     for y in list:
-                        resp += f"{x} {y[0]} {y[1]}\n"
+                        resp += f"{x} {y[1]} {y[0]}\n"
                 resp += '\n'
         else:
             resp = "error\nwrong command\n\n"
@@ -82,7 +83,7 @@ class ClientServerProtocol(asyncio.Protocol):
 
         if len(data_list) > 1:  # put, get имееют от одного до трех параметров
             if data_list[0] == "put" and len(data_list) > 2:
-                code = self.check_re(data_list[1], r'\w+\.\w+') and \
+                code = self.check_re(data_list[1], r'\w+\.?\w+') and \
                        self.check_re(data_list[2], r'\d+\.?\d*')
                 if code:
                     args = [data_list[1], data_list[2], ""]
@@ -126,7 +127,7 @@ class ClientServerProtocol(asyncio.Protocol):
         data = self.get_data()
         if not key == '*' and key in data:
             data = {key: data[key]}
-            print(data)
+            # print(data)
         elif not key == '*' and not key in data:
             data = {}
         return data
