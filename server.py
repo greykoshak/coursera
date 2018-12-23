@@ -44,6 +44,7 @@ class ClientServerProtocol(asyncio.Protocol):
         # print('Connection from {}'.format(peername))
 
     def data_received(self, data):
+        # https://python-hyper.org/projects/h2/en/stable/asyncio-example.html
         # try:
         #     events = self.conn.receive_data(data)
         # except ProtocolError as e:
