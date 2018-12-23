@@ -44,6 +44,11 @@ class ClientServerProtocol(asyncio.Protocol):
         # print('Connection from {}'.format(peername))
 
     def data_received(self, data):
+        # try:
+        #     events = self.conn.receive_data(data)
+        # except ProtocolError as e:
+        #     self.transport.write(self.conn.data_to_send())
+        #     self.transport.close()
         try:
             message = data.decode().lower()
             # print('Data received: {!r}'.format(message))
